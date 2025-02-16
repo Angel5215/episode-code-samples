@@ -149,6 +149,40 @@ Result<String, Int>.error(3)
  6. Is it possible to make key path setters work with `enum`s?
  */
 // TODO
+
+enum Either<A, B> {
+  case left(A)
+  case right(B)
+
+  var left: A? {
+    get {
+      guard case let .left(a) = self else { return nil }
+      return a
+    } set {
+      newValue.map { newValue in
+        self = .left(newValue)
+      }
+    }
+  }
+
+  var right: B? {
+    get {
+      guard case let .right(b) = self else { return nil }
+      return b
+    } set {
+      newValue.map { newValue in
+        self = .right(newValue)
+      }
+    }
+  }
+}
+
+Either<Bool, Int>.left(true)
+  |> (prop(\.left) <<< map) { !$0 }
+
+Either<Bool, Int>.right(41)
+  |> (prop(\.right) <<< map)(incr)
+
 /*:
  7. Redefine some of our setters in terms of `inout`. How does the type signature and composition change?
  */
