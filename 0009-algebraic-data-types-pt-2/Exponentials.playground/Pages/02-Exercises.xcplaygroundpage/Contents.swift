@@ -23,20 +23,43 @@
 /*:
  6. Implement the following equivalence:
  */
+// A^(B + C) = A^B * A^C
 func to<A, B, C>(_ f: @escaping (Either<B, C>) -> A) -> ((B) -> A, (C) -> A) {
-  fatalError()
+  (
+    { b in
+      f(.left(b))
+    },
+    { c in
+      f(.right(c))
+    }
+  )
 }
 
 func from<A, B, C>(_ f: ((B) -> A, (C) -> A)) -> (Either<B, C>) -> A {
-  fatalError()
+  { either in
+    switch either {
+    case let .left(b): f.0(b)
+    case let .right(a): f.1(a)
+    }
+  }
 }
 /*:
  7. Implement the following equivalence:
  */
+// (A*B)^C = A^C * B^C
 func to<A, B, C>(_ f: @escaping (C) -> (A, B)) -> ((C) -> A, (C) -> B) {
-  fatalError()
+  (
+    { c in
+      f(c).0
+    },
+    { c in
+      f(c).1
+    }
+  )
 }
 
 func from<A, B, C>(_ f: ((C) -> A, (C) -> B)) -> (C) -> (A, B) {
-  fatalError()
+  { c in
+    (f.0(c), f.1(c))
+  }
 }
