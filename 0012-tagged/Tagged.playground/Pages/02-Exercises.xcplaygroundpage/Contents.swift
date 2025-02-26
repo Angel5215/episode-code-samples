@@ -4,6 +4,82 @@
  1. Conditionally conform Tagged to ExpressibleByStringLiteral in order to restore the ergonomics of initializing our User’s email property. Note that ExpressibleByStringLiteral requires a couple other prerequisite conformances.
  */
 // TODO
+struct Tagged<Tag, RawValue> {
+  let rawValue: RawValue
+}
+
+extension Tagged: Decodable where RawValue: Decodable {
+  init(from decoder: any Decoder) throws {
+    self.init(rawValue: try RawValue(from: decoder))
+  }
+}
+
+extension Tagged: Equatable where RawValue: Equatable {
+  static func == (lhs: Tagged<Tag, RawValue>, rhs: Tagged<Tag, RawValue>) -> Bool {
+    lhs.rawValue == rhs.rawValue
+  }
+}
+
+extension Tagged: ExpressibleByIntegerLiteral where RawValue: ExpressibleByIntegerLiteral {
+  typealias IntegerLiteralType = RawValue.IntegerLiteralType
+
+  init(integerLiteral value: RawValue.IntegerLiteralType) {
+    self.init(rawValue: RawValue(integerLiteral: value))
+  }
+}
+
+extension Tagged: ExpressibleByUnicodeScalarLiteral where RawValue: ExpressibleByUnicodeScalarLiteral {
+  typealias UnicodeScalarLiteralType = RawValue.UnicodeScalarLiteralType
+
+  init(unicodeScalarLiteral value: RawValue.UnicodeScalarLiteralType) {
+    self.init(rawValue: RawValue(unicodeScalarLiteral: value))
+  }
+}
+
+extension Tagged: ExpressibleByExtendedGraphemeClusterLiteral where RawValue: ExpressibleByExtendedGraphemeClusterLiteral {
+  typealias ExtendedGraphemeClusterLiteralType = RawValue.ExtendedGraphemeClusterLiteralType
+
+  init(extendedGraphemeClusterLiteral value: RawValue.ExtendedGraphemeClusterLiteralType) {
+    self.init(rawValue: RawValue(extendedGraphemeClusterLiteral: value))
+  }
+}
+
+extension Tagged: ExpressibleByStringLiteral where RawValue: ExpressibleByStringLiteral {
+  typealias StringLiteralType = RawValue.StringLiteralType
+
+  init(stringLiteral value: RawValue.StringLiteralType) {
+    self.init(rawValue: RawValue(stringLiteral: value))
+  }
+}
+
+enum EmailTag {}
+typealias Email = Tagged<EmailTag, String>
+
+struct Subscription: Decodable {
+  typealias Id = Tagged<Subscription, Int>
+
+  let id: Id
+  let ownerId: User.Id
+}
+
+struct User: Decodable {
+  typealias Id = Tagged<User, Int>
+
+  let id: Id
+  let name: String
+  let email: Email
+  let subscriptionId: Subscription.Id?
+}
+
+
+let brandon = User(
+  id: 1,
+  name: "Brandon",
+  email: "brandon@pointfree.co",
+  subscriptionId: 1
+)
+
+brandon.email.rawValue
 /*:
  2. Conditionally conform Tagged to Comparable and sort users by their id in descending order.
  */
