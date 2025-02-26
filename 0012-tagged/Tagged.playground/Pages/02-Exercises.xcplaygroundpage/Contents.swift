@@ -79,11 +79,35 @@ let brandon = User(
   subscriptionId: 1
 )
 
+let stephen = User(
+  id: 2,
+  name: "Stephen",
+  email: "stephen@pointfree.co",
+  subscriptionId: nil
+)
+
+let blob = User(
+  id: 3,
+  name: "Blob",
+  email: "blob@pointfree.co",
+  subscriptionId: 1
+)
+
+let users = [blob, brandon, stephen]
+
 brandon.email.rawValue
 /*:
  2. Conditionally conform Tagged to Comparable and sort users by their id in descending order.
  */
 // TODO
+extension Tagged: Comparable where RawValue: Comparable {
+  static func < (lhs: Tagged<Tag, RawValue>, rhs: Tagged<Tag, RawValue>) -> Bool {
+    lhs.rawValue < rhs.rawValue
+  }
+}
+
+let sortedUsers = users.sorted { $0.id < $1.id }.map(\.name)
+
 /*:
  3. Let’s explore what happens when you have multiple fields in a struct that you want to strengthen at the type level. Add an age property to User that is tagged to wrap an Int value. Ensure that it doesn’t collide with User.Id. (Consider how we tagged Email.)
  */
