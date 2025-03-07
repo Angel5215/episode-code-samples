@@ -49,6 +49,11 @@ Int?.some(2)
 Int?.some(2)
   .map { $0 }
 
+[1, 2, 3]
+  .map(\.self)
+Int?.some(2)
+  .map(\.self)
+
 func id<A>(_ a: A) -> A {
   return a
 }
@@ -244,3 +249,5 @@ func map<A, B>(_ f: @escaping (A) -> B) -> (F3<A>) -> F3<B> {
 // func map<R, A, B>(_ f: (A) -> B) -> (F2<R, A>) -> F2<R, B>
 // func map   <A, B>(_ f: (A) -> B) -> (F3   <A>) -> F3   <B>
 //: [See the next page](@next) for exercises!
+// Functor
+// The map of the identity function is the identity function 
