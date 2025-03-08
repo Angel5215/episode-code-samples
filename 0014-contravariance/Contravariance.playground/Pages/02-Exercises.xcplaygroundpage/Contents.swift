@@ -1,33 +1,160 @@
+
+// Contravariant relationship
+// (UIView) -> UIView < (UIButton) -> UIView
+//
+//func foo(_ f: @escaping (UIButton) -> UIView) {
+//  let button = UIButton(type: .system)
+//  f(button)
+//}
+//
+//var bar: (UIView) -> UIView = { print($0); return $0 }
+//
+//foo(bar)
+
 /*:
  # Contravariance Exercises
 
  1.) Determine the sign of all the type parameters in the function `(A) -> (B) -> C`. Note that this is a curried function. It may be helpful to fully parenthesize the expression before determining variance.
  */
 // TODO
+// (A) -> ((B) -> C)
+//        |_|   |_|
+//         -1    +1
+// |_|    |_________|
+// -1         +1
+
+// A: -1
+// B: -1
+// C: +1
 /*:
  2.) Determine the sign of all the type parameters in the following function:
 
  `(A, B) -> (((C) -> (D) -> E) -> F) -> G`
  */
 // TODO
+// (A, B) -> (((C) -> (D) -> E) -> F) -> G
+//             |_|    |_|
+//              -1     +1
+//             |_________|  |_|
+//                 -1        +1
+//            |________________|  |_|
+//                    -1           +1
+//           |_______________________|  |_|
+//                     -1               +1
+// |___|     |_____________________________|
+//  -1                    +1
+
+// A: -1
+// B: -1
+// C: +1
+// D: -1
+// E: +1
+// F: -1
+// G: +1
 /*:
  3.) Recall that [a setter is just a function](https://www.pointfree.co/episodes/ep6-functional-setters#t813) `((A) -> B) -> (S) -> T`. Determine the variance of each type parameter, and define a `map` and `contramap` for each one. Further, for each `map` and `contramap` write a description of what those operations mean intuitively in terms of setters.
  */
 // TODO
+// ((A) -> B) -> ((S) -> T)
+//  |_|   |_|     |_|   |_|
+//   -1    +1      -1    +1
+// |________|    |________|
+//    -1             +1
+
+// A: +1
+// B: -1
+// S: -1
+// T: +1
+
 /*:
  4.) Define `union`, `intersect`, and `invert` on `PredicateSet`.
  */
 // TODO
+struct PredicateSet<A> {
+  var contains: (A) -> Bool
+
+  func union(_ predicateSet: PredicateSet) -> PredicateSet {
+    PredicateSet { a in
+      self.contains(a) || predicateSet.contains(a)
+    }
+  }
+
+  func intersect(_ predicateSet: Self) -> Self {
+    PredicateSet { a in
+      self.contains(a) && predicateSet.contains(a)
+    }
+  }
+
+  func invert() -> PredicateSet {
+    PredicateSet { a in
+      !self.contains(a)
+    }
+  }
+
+  func contramap<B>(_ f: @escaping (B) -> A) -> PredicateSet<B> {
+    PredicateSet<B>(contains: f >>> contains)
+  }
+}
+
+let evens = PredicateSet { $0 % 2 == 0 }
+let odds = PredicateSet { $0 % 2 != 0 }
+
+evens.contains(2)
+evens.contains(3)
+
+odds.contains(2)
+odds.contains(3)
+
+let allIntegers = evens.union(odds)
+allIntegers.contains(1)
+allIntegers.contains(2)
+allIntegers.contains(3)
+
+evens.invert().contains(3)
+evens.invert().contains(2)
+evens.invert().contains(5)
+
+let noIntegers = evens.intersect(odds)
+noIntegers.contains(0)
+noIntegers.contains(1)
+noIntegers.contains(2)
+noIntegers.contains(3)
+noIntegers.contains(4)
+
+let a = Set([1, 2, 3])
+let b = Set([3, 4, 5])
+
+a.union(b)
 /*:
  This collection of exercises explores building up complex predicate sets and understanding their performance characteristics.
 
  5a.) Create a predicate set `isPowerOf2: PredicateSet<Int>` that determines if a value is a power of `2`, _i.e._ `2^n` for some `n: Int`.
  */
 // TODO
+
+let isPowerOf2 = PredicateSet { x in
+  guard x != 0 else { return false }
+  return ceil(log2(Double(x))) == floor(log2(Double(x)))
+}
+
+isPowerOf2.contains(32)
+isPowerOf2.contains(31)
+isPowerOf2.contains(0)
+isPowerOf2.contains(256)
+isPowerOf2.contains(1024)
+isPowerOf2.contains(4096)
 /*:
  5b.) Use the above predicate set to derive a new one `isPowerOf2Minus1: PredicateSet<Int>` that tests if a number is of the form `2^n - 1` for `n: Int`.
  */
 // TODO
+let isPowerOf2Minus1 = isPowerOf2.contramap { powerOfTwoMinusOne in powerOfTwoMinusOne + 1 }
+isPowerOf2Minus1.contains(31)
+isPowerOf2Minus1.contains(255)
+isPowerOf2Minus1.contains(256)
+isPowerOf2Minus1.contains(257)
+isPowerOf2Minus1.contains(1023)
+isPowerOf2Minus1.contains(4095)
+
 /*:
  5c.) Find an algorithm online for testing if an integer is prime, and turn it into a predicate `isPrime: PredicateSet<Int>`.
  */
